@@ -1,0 +1,140 @@
+.home {
+    min-height: 100vh;
+    background-color: #1c1c1c;
+    position: relative;
+    overflow-x: hidden;
+
+    .background-image {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        transition: opacity 1s ease;
+    }
+
+    .center-logo {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        transition: opacity 0.5s ease;
+    }
+
+    .nav-links-only {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 20px;
+        z-index: 15;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+
+        a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+
+            &:hover {
+                color: darken(#ffffff, 20%);
+            }
+        }
+    }
+
+    &.show-content .nav-links-only {
+        opacity: 1;
+    }
+
+    // Styles for the full Navigation component
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #1c1c1c;
+        z-index: 15;
+        transition: opacity 0.5s ease;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &.show-content {
+        .center-logo {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .nav-links-only {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        nav {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .content {
+            opacity: 1;
+        }
+    }
+
+    .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 100px;
+        position: relative;
+        z-index: 5;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+
+        .tattooist-image {
+            width: 300px;
+            height: auto;
+            margin-right: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+            p {
+                color: #333;
+                line-height: 1.6;
+            }
+        }
+    }
+}
+
+// Media query for responsiveness
+@media (max-width: 768px) {
+    .home {
+        .content {
+            flex-direction: column;
+            padding-top: 150px;
+
+            .tattooist-image {
+                margin-right: 0;
+                margin-bottom: 30px;
+            }
+
+            .card {
+                width: 90%;
+                max-width: none;
+            }
+        }
+    }
+}
