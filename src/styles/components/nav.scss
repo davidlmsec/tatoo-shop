@@ -1,0 +1,153 @@
+@font-face {
+    font-family: "Roboto-Light";
+    src: url(../../assets/fonts/Roboto-Light.ttf);
+    font-family: "Roboto-Medium";
+    src: url(../../assets/fonts/Roboto-Medium.ttf);
+}
+
+// Variables
+$background-color: #1c1c1c;
+$text-color: #ffffff;
+$hover-color: #444444;
+$font-light: Roboto-Light;
+$font-medium: Roboto-Medium;
+
+.fixed-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #1c1c1c;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: $background-color;
+    color: $text-color;
+    height: 80px; // Ajustez selon vos besoins
+
+    .logo-container {
+        width: 110px; // Ajustez selon la taille de votre logo
+        height: 110px;
+        border-radius: 50%;
+        background-color: $background-color;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+        top: 30px; // Pour faire dépasser légèrement le logo
+
+        .logo {
+            position: relative;
+            top: 0%;
+            left: 0%;
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+        }
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            margin-left: 20px;
+
+            a {
+                font-family: $font-medium;
+                color: $text-color;
+                text-decoration: none;
+                font-size: 16px;
+                transition: color 0.3s ease;
+
+                &:hover {
+                    color: darken($text-color, 20%);
+                }
+            }
+        }
+    }
+
+    .burger-menu {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+
+        span {
+            width: 25px;
+            height: 3px;
+            background-color: $text-color;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+
+        &.open {
+            span:nth-child(1) {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            span:nth-child(2) {
+                opacity: 0;
+            }
+
+            span:nth-child(3) {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        justify-content: center;
+        position: relative;
+
+        .logo-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+
+            .logo {
+                position: relative;
+                top: 0%;
+                left: 0%;
+                width: 70%;
+                height: 70%;
+                object-fit: contain;
+            }
+        }
+
+
+
+        .nav-links {
+            position: fixed;
+            right: -100%;
+            top: 80px; // Ajustez selon la hauteur de votre barre de navigation
+            flex-direction: column;
+            background-color: $background-color;
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+            box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+
+            &.open {
+                right: 0;
+            }
+
+            li {
+                margin: 2.5rem 0;
+            }
+        }
+
+        .burger-menu {
+            display: flex;
+            position: absolute;
+            left: 20px;
+        }
+    }
+}
