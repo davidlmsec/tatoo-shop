@@ -1,0 +1,139 @@
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.gallery-page {
+    flex: 1;
+    position: relative;
+    padding: 80px 20px 60px; // Ajustez selon la hauteur de votre Nav et Footer
+
+    .background-image {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.6;
+        z-index: -1;
+    }
+
+    .content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        margin-top: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .category-nav {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 25px;
+
+        button {
+            background: none;
+            border: none;
+            padding: 5px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            transition: color 0.3s ease;
+
+            &:hover,
+            &.active {
+                color: #8B0000;
+            }
+        }
+    }
+
+    .image-viewer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        position: relative;
+
+        .image-container {
+            width: 80%;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+
+            img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+        }
+
+        .nav-button {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            font-size: 24px;
+            padding: 10px;
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.8);
+            }
+
+            &.prev {
+                left: 20px;
+            }
+
+            &.next {
+                right: 20px;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .gallery-page {
+        .category-nav {
+            flex-wrap: wrap;
+
+            button {
+                margin-bottom: 5px;
+            }
+        }
+
+        .image-viewer {
+            .image-container {
+                width: 90%;
+                height: 50vh;
+            }
+
+            .nav-button {
+                font-size: 20px;
+                padding: 8px;
+
+                &.prev {
+                    left: 5px;
+                }
+
+                &.next {
+                    right: 5px;
+                }
+            }
+        }
+    }
+}
