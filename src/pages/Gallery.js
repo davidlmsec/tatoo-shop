@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
@@ -66,19 +62,20 @@ const Gallery = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* Search and Filter Section */}
             <div className="flex flex-col md:flex-row gap-4 mb-8">
-                <Input
+                <input
                     type="text"
                     placeholder="Rechercher par nom..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full md:w-64"
+                    className="w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
-                <Select
+                <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full md:w-48"
+                    className="w-full md:w-48 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="all">Toutes les catégories</option>
                     {categories.map(category => (
@@ -86,33 +83,36 @@ const Gallery = () => {
                             {category.name}
                         </option>
                     ))}
-                </Select>
+                </select>
             </div>
 
+            {/* Loading Spinner */}
             {loading ? (
                 <div className="flex justify-center items-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
                 </div>
             ) : (
+                /* Image Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredImages.map(image => (
-                        <Card key={image.id} className="overflow-hidden">
+                        <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                             <img
                                 src={`http://your-server-url${image.file_path}`}
                                 alt={image.name}
                                 className="w-full h-64 object-cover"
                             />
-                            <CardContent className="p-4">
+                            <div className="p-4">
                                 <h3 className="text-lg font-semibold">{image.name}</h3>
                                 <p className="text-sm text-gray-600">
                                     {categories.find(cat => cat.id === image.category_id)?.name}
                                 </p>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     ))}
                 </div>
             )}
 
+            {/* No Results Message */}
             {filteredImages.length === 0 && !loading && (
                 <div className="text-center py-12">
                     <p className="text-gray-600">Aucune image trouvée</p>
