@@ -1,76 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
 const Gallery = () => {
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('');
     const [images, setImages] = useState([]);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [filteredImages, setFilteredImages] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Ici, vous feriez normalement un appel API pour récupérer les catégories et les images
-        // Pour l'exemple, nous utiliserons des données statiques
-        setCategories(['Le salon', 'Dotwork', 'Graphique', 'Nature', 'Ornemental']);
-        setSelectedCategory('Le salon');
-        setImages([
-            '/path/to/image1.jpg',
-            '/path/to/image2.jpg',
-            '/path/to/image3.jpg',
-        ]);
+        fetchImages();
+        fetchCategories();
     }, []);
 
-    const handleCategoryChange = (category) => {
-        setSelectedCategory(category);
-        setCurrentImageIndex(0);
-        // Ici, vous feriez un appel API pour récupérer les images de la catégorie sélectionnée
+    useEffect(() => {
+        filterImages();
+    }, [selectedCategory, searchTerm, images]);
+
+    const fetchImages = async () => {
+        try {
+            const response = await fetch('http://your-api-url/api/images');
+            const data = await response.json();
+            setImages(data);
+            setFilteredImages(data);
+        } catch (error) {
+            console.error('Error fetching images:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handlePrevImage = () => {
-        setCurrentImageIndex((prevIndex) =>
-            prevIndex === 0 ? images.length - 1 : prevIndex - 1
-        );
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch('http://your-api-url/api/categories');
+            const data = await response.json();
+            setCategories(data);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
     };
 
-    const handleNextImage = () => {
-        setCurrentImageIndex((prevIndex) =>
-            prevIndex === images.length - 1 ? 0 : prevIndex + 1
-        );
+    const filterImages = () => {
+        let filtered = [...images];
+
+        if (selectedCategory !== 'all') {
+            filtered = filtered.filter(img => img.category_id === selectedCategory);
+        }
+
+        if (searchTerm) {
+            filtered = filtered.filter(img =>
+                img.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        setFilteredImages(filtered);
     };
 
     return (
-        <div className="page-container">
-            <div className="gallery-page">
-                <div className="background-image" style={{ backgroundImage: `url(${backgroundImage})` }}></div>
-                <div className="content-wrapper">
-                    <div className="category-nav">
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                className={selectedCategory === category ? 'active' : ''}
-                                onClick={() => handleCategoryChange(category)}
-                            >
-                                {category}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="image-viewer">
-                        <button className="nav-button prev" onClick={handlePrevImage}>
-                            <FaChevronLeft />
-                        </button>
-                        <div className="image-container">
-                            {images.length > 0 && (
-                                <img src={images[currentImageIndex]} alt={`Tattoo ${currentImageIndex + 1}`} />
-                            )}
-                        </div>
-                        <button className="nav-button next" onClick={handleNextImage}>
-                            <FaChevronRight />
-                        </button>
-                    </div>
-                </div>
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+                <Input
+                    type="text"
+                    placeholder="Rechercher par nom..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full md:w-64"
+                />
+
+                <Select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full md:w-48"
+                >
+                    <option value="all">Toutes les catégories</option>
+                    {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </Select>
             </div>
+
+            {loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredImages.map(image => (
+                        <Card key={image.id} className="overflow-hidden">
+                            <img
+                                src={`http://your-server-url${image.file_path}`}
+                                alt={image.name}
+                                className="w-full h-64 object-cover"
+                            />
+                            <CardContent className="p-4">
+                                <h3 className="text-lg font-semibold">{image.name}</h3>
+                                <p className="text-sm text-gray-600">
+                                    {categories.find(cat => cat.id === image.category_id)?.name}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
+
+            {filteredImages.length === 0 && !loading && (
+                <div className="text-center py-12">
+                    <p className="text-gray-600">Aucune image trouvée</p>
+                </div>
+            )}
         </div>
     );
 };
