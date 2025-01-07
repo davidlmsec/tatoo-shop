@@ -1,42 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaExpand, FaCompress } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
 const Gallery = () => {
-    const [images, setImages] = useState([]);
-    const [filteredImages, setFilteredImages] = useState([]);
+    const [medias, setMedias] = useState([]);
+    const [filteredMedias, setFilteredMedias] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchImages();
+        fetchMedias();
         fetchCategories();
     }, []);
 
     useEffect(() => {
-        filterImages();
-    }, [selectedCategory, searchTerm, images]);
+        filterMedias();
+    }, [selectedCategory, medias]);
 
-    const fetchImages = async () => {
+    const fetchMedias = async () => {
         try {
-            const response = await fetch('http://your-api-url/api/images');
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/medias`);
             const data = await response.json();
-            setImages(data);
-            setFilteredImages(data);
+            setMedias(data);
+            setFilteredMedias(data);
         } catch (error) {
-            console.error('Error fetching images:', error);
+            console.error('Error fetching medias:', error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://your-api-url/api/categories');
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/categories`);
             const data = await response.json();
             setCategories(data);
         } catch (error) {
@@ -44,80 +46,140 @@ const Gallery = () => {
         }
     };
 
-    const filterImages = () => {
-        let filtered = [...images];
-
-        if (selectedCategory !== 'all') {
-            filtered = filtered.filter(img => img.category_id === selectedCategory);
+    const filterMedias = () => {
+        if (selectedCategory === 'all') {
+            setFilteredMedias(medias);
+        } else {
+            setFilteredMedias(medias.filter(media => media.category_id === selectedCategory));
         }
+        setCurrentMediaIndex(0);
+    };
 
-        if (searchTerm) {
-            filtered = filtered.filter(img =>
-                img.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const handlePrevious = () => {
+        setCurrentMediaIndex((prev) =>
+            prev === 0 ? filteredMedias.length - 1 : prev - 1
+        );
+    };
+
+    const handleNext = () => {
+        setCurrentMediaIndex((prev) =>
+            prev === filteredMedias.length - 1 ? 0 : prev + 1
+        );
+    };
+
+    const toggleFullscreen = () => {
+        const element = document.documentElement;
+        if (!isFullscreen) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+        setIsFullscreen(!isFullscreen);
+    };
+
+    const MediaDisplay = ({ media }) => {
+        if (media.file_type === 'video') {
+            return (
+                <video
+                    controls
+                    className="w-full h-full object-contain"
+                    src={`${process.env.REACT_APP_API_URL}${media.file_path}`}
+                />
             );
         }
-
-        setFilteredImages(filtered);
+        return (
+            <img
+                src={`${process.env.REACT_APP_API_URL}${media.file_path}`}
+                alt={media.title}
+                className="w-full h-full object-contain"
+                loading="lazy"
+            />
+        );
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Search and Filter Section */}
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
-                <input
-                    type="text"
-                    placeholder="Rechercher par nom..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+        <div className="gallery-page">
+            <div
+                className="background-image"
+                style={{ backgroundImage: `url(${backgroundImage})` }}
+            />
 
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full md:w-48 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="all">Toutes les catégories</option>
+            <div className="content-wrapper">
+                <div className="category-nav">
+                    <button
+                        className={`${selectedCategory === 'all' ? 'active' : ''}`}
+                        onClick={() => setSelectedCategory('all')}
+                    >
+                        Tout visualiser
+                    </button>
                     {categories.map(category => (
-                        <option key={category.id} value={category.id}>
+                        <button
+                            key={category.id}
+                            className={`${selectedCategory === category.id ? 'active' : ''}`}
+                            onClick={() => setSelectedCategory(category.id)}
+                        >
                             {category.name}
-                        </option>
+                        </button>
                     ))}
-                </select>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                    </div>
+                ) : (
+                    <motion.div className="image-viewer">
+                        <button
+                            className="nav-button prev"
+                            onClick={handlePrevious}
+                            aria-label="Image précédente"
+                        >
+                            <FaChevronLeft />
+                        </button>
+
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentMediaIndex}
+                                className="image-container"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {filteredMedias[currentMediaIndex] && (
+                                    <>
+                                        <MediaDisplay media={filteredMedias[currentMediaIndex]} />
+                                        <button
+                                            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 p-2 rounded-full"
+                                            onClick={toggleFullscreen}
+                                        >
+                                            {isFullscreen ? <FaCompress /> : <FaExpand />}
+                                        </button>
+                                    </>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+
+                        <button
+                            className="nav-button next"
+                            onClick={handleNext}
+                            aria-label="Image suivante"
+                        >
+                            <FaChevronRight />
+                        </button>
+                    </motion.div>
+                )}
+
+                {filteredMedias.length === 0 && !isLoading && (
+                    <div className="text-center py-12">
+                        <p className="text-gray-600">Aucun média trouvé dans cette catégorie</p>
+                    </div>
+                )}
             </div>
-
-            {/* Loading Spinner */}
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-                </div>
-            ) : (
-                /* Image Grid */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredImages.map(image => (
-                        <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                            <img
-                                src={`http://your-server-url${image.file_path}`}
-                                alt={image.name}
-                                className="w-full h-64 object-cover"
-                            />
-                            <div className="p-4">
-                                <h3 className="text-lg font-semibold">{image.name}</h3>
-                                <p className="text-sm text-gray-600">
-                                    {categories.find(cat => cat.id === image.category_id)?.name}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* No Results Message */}
-            {filteredImages.length === 0 && !loading && (
-                <div className="text-center py-12">
-                    <p className="text-gray-600">Aucune image trouvée</p>
-                </div>
-            )}
         </div>
     );
 };
