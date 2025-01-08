@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Nav from '../components/Nav';
-import Footer from '../components/Footer';
 import { FaChevronLeft, FaChevronRight, FaExpand, FaCompress } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
@@ -19,90 +16,77 @@ const Gallery = () => {
         fetchCategories();
     }, []);
 
-    useEffect(() => {
-        filterMedias();
-    }, [selectedCategory, medias]);
-
     const fetchMedias = async () => {
         try {
-            console.log('Début du chargement des médias');
+            console.log('Fetching medias...');
             const response = await fetch('http://localhost:3001/api/medias');
-            console.log('Réponse reçue:', response);
             const data = await response.json();
-            console.log('Données reçues:', data);
+            console.log('Medias received:', data);
             setMedias(data);
             setFilteredMedias(data);
         } catch (error) {
-            console.error('Erreur lors du chargement des médias:', error);
+            console.error('Error fetching medias:', error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/categories`);
+            console.log('Fetching categories...');
+            const response = await fetch('http://localhost:3001/api/categories');
             const data = await response.json();
+            console.log('Categories received:', data);
             setCategories(data);
         } catch (error) {
             console.error('Error fetching categories:', error);
         }
     };
 
-    const filterMedias = () => {
+    useEffect(() => {
         if (selectedCategory === 'all') {
             setFilteredMedias(medias);
         } else {
-            setFilteredMedias(medias.filter(media => media.category_id === selectedCategory));
+            const filtered = medias.filter(media => media.category_id === parseInt(selectedCategory));
+            setFilteredMedias(filtered);
         }
         setCurrentMediaIndex(0);
-    };
-
-    const handlePrevious = () => {
-        setCurrentMediaIndex((prev) =>
-            prev === 0 ? filteredMedias.length - 1 : prev - 1
-        );
-    };
-
-    const handleNext = () => {
-        setCurrentMediaIndex((prev) =>
-            prev === filteredMedias.length - 1 ? 0 : prev + 1
-        );
-    };
-
-    const toggleFullscreen = () => {
-        const element = document.documentElement;
-        if (!isFullscreen) {
-            if (element.requestFullscreen) {
-                element.requestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-        setIsFullscreen(!isFullscreen);
-    };
+    }, [selectedCategory, medias]);
 
     const MediaDisplay = ({ media }) => {
-        if (media.file_type === 'video') {
-            return (
-                <video
-                    controls
-                    className="w-full h-full object-contain"
-                    src={`${process.env.REACT_APP_API_URL}${media.file_path}`}
-                />
-            );
-        }
+        if (!media) return null;
+
+        console.log('Rendering media:', media);
+        const imageUrl = `http://localhost:3001${media.file_path}`;
+        console.log('Image URL:', imageUrl);
+
         return (
-            <img
-                src={`${process.env.REACT_APP_API_URL}${media.file_path}`}
-                alt={media.title}
-                className="w-full h-full object-contain"
-                loading="lazy"
-            />
+            <div className="relative w-full h-full">
+                <img
+                    src={imageUrl}
+                    alt={media.title}
+                    className="w-full h-full object-contain"
+                    onLoad={() => console.log('Image loaded successfully')}
+                    onError={(e) => {
+                        console.error('Error loading image:', e);
+                        e.target.src = 'placeholder.jpg'; // Optionnel : image par défaut
+                    }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50 text-white">
+                    <h3 className="text-lg font-semibold">{media.title}</h3>
+                    <p className="text-sm">{media.description}</p>
+                </div>
+            </div>
         );
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="gallery-page">
@@ -130,54 +114,31 @@ const Gallery = () => {
                     ))}
                 </div>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-                    </div>
-                ) : (
-                    <motion.div className="image-viewer">
+                {filteredMedias.length > 0 ? (
+                    <div className="image-viewer">
                         <button
                             className="nav-button prev"
-                            onClick={handlePrevious}
-                            aria-label="Image précédente"
+                            onClick={() => setCurrentMediaIndex((prev) =>
+                                prev === 0 ? filteredMedias.length - 1 : prev - 1
+                            )}
                         >
                             <FaChevronLeft />
                         </button>
 
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentMediaIndex}
-                                className="image-container"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {filteredMedias[currentMediaIndex] && (
-                                    <>
-                                        <MediaDisplay media={filteredMedias[currentMediaIndex]} />
-                                        <button
-                                            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 p-2 rounded-full"
-                                            onClick={toggleFullscreen}
-                                        >
-                                            {isFullscreen ? <FaCompress /> : <FaExpand />}
-                                        </button>
-                                    </>
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="image-container">
+                            <MediaDisplay media={filteredMedias[currentMediaIndex]} />
+                        </div>
 
                         <button
                             className="nav-button next"
-                            onClick={handleNext}
-                            aria-label="Image suivante"
+                            onClick={() => setCurrentMediaIndex((prev) =>
+                                prev === filteredMedias.length - 1 ? 0 : prev + 1
+                            )}
                         >
                             <FaChevronRight />
                         </button>
-                    </motion.div>
-                )}
-
-                {filteredMedias.length === 0 && !isLoading && (
+                    </div>
+                ) : (
                     <div className="text-center py-12">
                         <p className="text-gray-600">Aucun média trouvé dans cette catégorie</p>
                     </div>
