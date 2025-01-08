@@ -25,14 +25,17 @@ const Gallery = () => {
 
     const fetchMedias = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/medias`);
+            console.log('Début du chargement des médias');
+            const response = await fetch('http://localhost:3001/api/medias');
+            console.log('Réponse reçue:', response);
             const data = await response.json();
+            console.log('Données reçues:', data);
             setMedias(data);
             setFilteredMedias(data);
         } catch (error) {
-            console.error('Error fetching medias:', error);
+            console.error('Erreur lors du chargement des médias:', error);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
