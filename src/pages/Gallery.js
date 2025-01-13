@@ -8,59 +8,46 @@ const Gallery = () => {
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log('Début du chargement des données');
-                // Fetch des médias
-                const mediasResponse = await fetch('http://localhost:3001/api/medias');
-                if (!mediasResponse.ok) {
-                    throw new Error(`HTTP error! status: ${mediasResponse.status}`);
-                }
-                const mediasData = await mediasResponse.json();
-                console.log('Médias reçus:', mediasData);
-                setMedias(mediasData);
-                setFilteredMedias(mediasData);
+        // Données de test
+        const mockCategories = [
+            { id: 1, name: 'Le salon', slug: 'salon' },
+            { id: 2, name: 'Dotwork', slug: 'dotwork' },
+            { id: 3, name: 'Graphique', slug: 'graphique' },
+            { id: 4, name: 'Nature', slug: 'nature' },
+            { id: 5, name: 'Ornemental', slug: 'ornemental' }
+        ];
 
-                // Fetch des catégories
-                const categoriesResponse = await fetch('http://localhost:3001/api/categories');
-                if (!categoriesResponse.ok) {
-                    throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
-                }
-                const categoriesData = await categoriesResponse.json();
-                console.log('Catégories reçues:', categoriesData);
-                setCategories(categoriesData);
-            } catch (error) {
-                console.error('Erreur lors du chargement:', error);
-                setError(error.message);
-            } finally {
-                setIsLoading(false);
+        const mockMedias = [
+            {
+                id: 1,
+                title: "Image Test 1",
+                description: "Description test 1",
+                file_path: "/uploads/images/graphisme/tattooer-working-with-machine.jpg",
+                file_type: "image",
+                category_id: 3
             }
-        };
+            // Vous pouvez ajouter plus d'images de test ici
+        ];
 
-        fetchData();
+        setCategories(mockCategories);
+        setMedias(mockMedias);
+        setFilteredMedias(mockMedias);
+        setIsLoading(false);
     }, []);
 
-    // Filtrage des médias
     useEffect(() => {
         if (selectedCategory === 'all') {
             setFilteredMedias(medias);
         } else {
-            const filtered = medias.filter(media =>
-                media.category_id === parseInt(selectedCategory)
-            );
+            const filtered = medias.filter(media => media.category_id === parseInt(selectedCategory));
             setFilteredMedias(filtered);
         }
     }, [selectedCategory, medias]);
 
     if (isLoading) {
         return <div>Chargement en cours...</div>;
-    }
-
-    if (error) {
-        return <div>Erreur de chargement: {error}</div>;
     }
 
     return (
@@ -95,23 +82,15 @@ const Gallery = () => {
                     ) : (
                         filteredMedias.map(media => (
                             <div key={media.id} className="image-container">
-                                {media.file_type === 'video' ? (
-                                    <video
-                                        controls
-                                        src={`http://localhost:3001${media.file_path}`}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <img
-                                        src={`http://localhost:3001${media.file_path}`}
-                                        alt={media.title}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            console.error('Erreur de chargement image:', media.file_path);
-                                            e.target.src = backgroundImage; // Image par défaut
-                                        }}
-                                    />
-                                )}
+                                <img
+                                    src={media.file_path}
+                                    alt={media.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        console.error('Erreur de chargement image:', media.file_path);
+                                        e.target.src = backgroundImage;
+                                    }}
+                                />
                                 <div className="image-info">
                                     <h3>{media.title}</h3>
                                     <p>{media.description}</p>
