@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
 const Gallery = () => {
@@ -35,11 +35,12 @@ const Gallery = () => {
             file_path: "/uploads/images/graphisme/tattooer-working-with-machine.jpg",
             category_id: 3
         }
-        // Ajoutez d'autres images ici selon vos besoins
     ];
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [showPopup, setShowPopup] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     // Filtrage des médias selon la catégorie sélectionnée
     const filteredMedias = selectedCategory === 'all'
@@ -56,6 +57,96 @@ const Gallery = () => {
         setCurrentMediaIndex(prev =>
             prev === filteredMedias.length - 1 ? 0 : prev + 1
         );
+    };
+
+    const handleImageClick = (media) => {
+        setSelectedImage(media);
+        setShowPopup(true);
+    };
+
+    const Popup = () => {
+        if (!showPopup || !selectedImage) return null;
+
+        return (
+            <div className="popup-overlay" onClick={() => setShowPopup(false)}>
+                <div className="popup-content" onClick={e => e.stopPropagation()}>
+                    <button className="popup-close" onClick={() => setShowPopup(false)}>
+                        <FaTimes />
+                    </button>
+                    <img
+                        src={selectedImage.file_path}
+                        alt={selectedImage.title}
+                    />
+                    <div className="popup-info">
+                        <h3>{selectedImage.title}</h3>
+                        <p>{selectedImage.description}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderMedia = () => {
+        if (selectedCategory === 'all') {
+            return (
+                <div className="image-grid">
+                    {filteredMedias.map(media => (
+                        <div
+                            key={media.id}
+                            className="image-container"
+                            onClick={() => handleImageClick(media)}
+                        >
+                            <img
+                                src={media.file_path}
+                                alt={media.title}
+                                onError={(e) => {
+                                    console.error('Erreur de chargement image:', media.file_path);
+                                    e.target.src = backgroundImage;
+                                }}
+                            />
+                            <div className="image-info">
+                                <h3>{media.title}</h3>
+                                <p>{media.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        } else {
+            return (
+                <div className="single-image-viewer">
+                    {filteredMedias.length > 0 && (
+                        <>
+                            <div
+                                className="image-container"
+                                onClick={() => handleImageClick(filteredMedias[currentMediaIndex])}
+                            >
+                                <img
+                                    src={filteredMedias[currentMediaIndex].file_path}
+                                    alt={filteredMedias[currentMediaIndex].title}
+                                    onError={(e) => {
+                                        console.error('Erreur de chargement image:', filteredMedias[currentMediaIndex].file_path);
+                                        e.target.src = backgroundImage;
+                                    }}
+                                />
+                                <div className="image-info">
+                                    <h3>{filteredMedias[currentMediaIndex].title}</h3>
+                                    <p>{filteredMedias[currentMediaIndex].description}</p>
+                                </div>
+                            </div>
+                            <div className="navigation-buttons">
+                                <button onClick={handlePrevious} className="nav-button prev">
+                                    <FaChevronLeft />
+                                </button>
+                                <button onClick={handleNext} className="nav-button next">
+                                    <FaChevronRight />
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
     };
 
     return (
@@ -84,40 +175,9 @@ const Gallery = () => {
                     ))}
                 </div>
 
-                <div className="image-grid">
-                    {filteredMedias.length === 0 ? (
-                        <div className="no-images">Aucune image trouvée</div>
-                    ) : (
-                        filteredMedias.map(media => (
-                            <div key={media.id} className="image-container">
-                                <img
-                                    src={media.file_path}
-                                    alt={media.title}
-                                    onError={(e) => {
-                                        console.error('Erreur de chargement image:', media.file_path);
-                                        e.target.src = backgroundImage;
-                                    }}
-                                />
-                                <div className="image-info">
-                                    <h3>{media.title}</h3>
-                                    <p>{media.description}</p>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-
-                {filteredMedias.length > 1 && (
-                    <div className="navigation-buttons">
-                        <button onClick={handlePrevious} className="nav-button prev">
-                            <FaChevronLeft />
-                        </button>
-                        <button onClick={handleNext} className="nav-button next">
-                            <FaChevronRight />
-                        </button>
-                    </div>
-                )}
+                {renderMedia()}
             </div>
+            <Popup />
         </div>
     );
 };
