@@ -177,7 +177,6 @@ const Gallery = () => {
 
                 {renderMedia()}
             </div>
-     //       <Popup />
         </div>
     );
 };
