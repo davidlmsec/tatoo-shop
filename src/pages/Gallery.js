@@ -64,27 +64,27 @@ const Gallery = () => {
         setShowPopup(true);
     };
 
-    const Popup = () => {
-        if (!showPopup || !selectedImage) return null;
+    // const Popup = () => {
+    //     if (!showPopup || !selectedImage) return null;
 
-        return (
-            <div className="popup-overlay" onClick={() => setShowPopup(false)}>
-                <div className="popup-content" onClick={e => e.stopPropagation()}>
-                    <button className="popup-close" onClick={() => setShowPopup(false)}>
-                        <FaTimes />
-                    </button>
-                    <img
-                        src={selectedImage.file_path}
-                        alt={selectedImage.title}
-                    />
-                    <div className="popup-info">
-                        <h3>{selectedImage.title}</h3>
-                        <p>{selectedImage.description}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    };
+    //     return (
+    //         <div className="popup-overlay" onClick={() => setShowPopup(false)}>
+    //             <div className="popup-content" onClick={e => e.stopPropagation()}>
+    //                 <button className="popup-close" onClick={() => setShowPopup(false)}>
+    //                     <FaTimes />
+    //                 </button>
+    //                 <img
+    //                     src={selectedImage.file_path}
+    //                     alt={selectedImage.title}
+    //                 />
+    //                 <div className="popup-info">
+    //                     <h3>{selectedImage.title}</h3>
+    //                     <p>{selectedImage.description}</p>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // };
 
     const renderMedia = () => {
         if (selectedCategory === 'all') {
