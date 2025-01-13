@@ -1,54 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import backgroundImage from '../assets/img/image_fond.png';
 
 const Gallery = () => {
-    const [medias, setMedias] = useState([]);
-    const [filteredMedias, setFilteredMedias] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [isLoading, setIsLoading] = useState(true);
+    // Catégories statiques
+    const categories = [
+        { id: 1, name: 'Le salon', slug: 'salon' },
+        { id: 2, name: 'Dotwork', slug: 'dotwork' },
+        { id: 3, name: 'Graphique', slug: 'graphique' },
+        { id: 4, name: 'Nature', slug: 'nature' },
+        { id: 5, name: 'Ornemental', slug: 'ornemental' }
+    ];
 
-    useEffect(() => {
-        // Données de test
-        const mockCategories = [
-            { id: 1, name: 'Le salon', slug: 'salon' },
-            { id: 2, name: 'Dotwork', slug: 'dotwork' },
-            { id: 3, name: 'Graphique', slug: 'graphique' },
-            { id: 4, name: 'Nature', slug: 'nature' },
-            { id: 5, name: 'Ornemental', slug: 'ornemental' }
-        ];
-
-        const mockMedias = [
-            {
-                id: 1,
-                title: "Image Test 1",
-                description: "Description test 1",
-                file_path: "/uploads/images/graphisme/tattooer-working-with-machine.jpg",
-                file_type: "image",
-                category_id: 3
-            }
-            // Vous pouvez ajouter plus d'images de test ici
-        ];
-
-        setCategories(mockCategories);
-        setMedias(mockMedias);
-        setFilteredMedias(mockMedias);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        if (selectedCategory === 'all') {
-            setFilteredMedias(medias);
-        } else {
-            const filtered = medias.filter(media => media.category_id === parseInt(selectedCategory));
-            setFilteredMedias(filtered);
+    // Images statiques
+    const allMedias = [
+        {
+            id: 1,
+            title: "Le salon",
+            description: "Notre espace de travail",
+            file_path: "/uploads/images/salon/salon1.jpg",
+            category_id: 1
+        },
+        {
+            id: 2,
+            title: "Dotwork classique",
+            description: "Technique pointilliste",
+            file_path: "/uploads/images/dotwork/dotwork1.jpg",
+            category_id: 2
+        },
+        {
+            id: 3,
+            title: "Design graphique",
+            description: "Style moderne",
+            file_path: "/uploads/images/graphisme/tattooer-working-with-machine.jpg",
+            category_id: 3
         }
-    }, [selectedCategory, medias]);
+        // Ajoutez d'autres images ici selon vos besoins
+    ];
 
-    if (isLoading) {
-        return <div>Chargement en cours...</div>;
-    }
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+    // Filtrage des médias selon la catégorie sélectionnée
+    const filteredMedias = selectedCategory === 'all'
+        ? allMedias
+        : allMedias.filter(media => media.category_id === parseInt(selectedCategory));
+
+    const handlePrevious = () => {
+        setCurrentMediaIndex(prev =>
+            prev === 0 ? filteredMedias.length - 1 : prev - 1
+        );
+    };
+
+    const handleNext = () => {
+        setCurrentMediaIndex(prev =>
+            prev === filteredMedias.length - 1 ? 0 : prev + 1
+        );
+    };
 
     return (
         <div className="gallery-page">
@@ -78,14 +86,13 @@ const Gallery = () => {
 
                 <div className="image-grid">
                     {filteredMedias.length === 0 ? (
-                        <div>Aucune image trouvée</div>
+                        <div className="no-images">Aucune image trouvée</div>
                     ) : (
                         filteredMedias.map(media => (
                             <div key={media.id} className="image-container">
                                 <img
                                     src={media.file_path}
                                     alt={media.title}
-                                    className="w-full h-full object-cover"
                                     onError={(e) => {
                                         console.error('Erreur de chargement image:', media.file_path);
                                         e.target.src = backgroundImage;
@@ -99,6 +106,17 @@ const Gallery = () => {
                         ))
                     )}
                 </div>
+
+                {filteredMedias.length > 1 && (
+                    <div className="navigation-buttons">
+                        <button onClick={handlePrevious} className="nav-button prev">
+                            <FaChevronLeft />
+                        </button>
+                        <button onClick={handleNext} className="nav-button next">
+                            <FaChevronRight />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
